@@ -1,0 +1,45 @@
+{
+   "action": {
+      "default_icon": "find_and_replace.png"
+   },
+   "background": {
+      "service_worker": "service_worker.js"
+   },
+   "commands": {
+      "settings.keyboard_shortcut.cmd1": {
+         "description": "1",
+         "suggested_key": "Ctrl+1"
+      },
+      "settings.keyboard_shortcut.cmd2": {
+         "description": "2",
+         "suggested_key": "Ctrl+2"
+      },
+      "settings.keyboard_shortcut.cmd3": {
+         "description": "3",
+         "suggested_key": "Ctrl+3"
+      },
+      "settings.keyboard_shortcut.cmd4": {
+         "description": "4",
+         "suggested_key": "Ctrl+4"
+      }
+   },
+   "content_scripts": [ {
+      "js": [ "content.js" ],
+      "matches": [ "\u003Call_urls>" ]
+   } ],
+   "description": "A tool that help you find and replace text.",
+   "icons": {
+      "16": "find_and_replace.png",
+      "32": "find_and_replace.png",
+      "48": "find_and_replace.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1KzIIkIfLH17yKLGTb2pBXWR2TXBMKt4c78W6lq6VkWFHV2R2JFXCAlB9e0alxKswQA7WsW/3yIJcu/ZtT34p8uBlr9aUsBsEC7l/JG+i1PtivVVFBn93DFvhFmdgDC5pPtkRVPbiZZpHh25O/zWUvnPLA+21tywQUMCKhxov2Pjf5x5Ndbwn+7+bFgIasJRtQDcimAGx4m/dmoHFjtDA7Xd/M9+DW9sOICCZRuzTlgVkYEBba0RZGy07DqR2FCSkKaLCm54gvkthMjnT0baMDjZHN2BdmeaOkKbbNJRWOY7vPK5GcIEtYPE8eVIx7Ih3n0NtaOPHyEbarLTLMmv2wIDAQAB",
+   "manifest_version": 3,
+   "name": "Find and replace",
+   "permissions": [ "tabs", "activeTab", "scripting", "storage", "sidePanel", "contextMenus" ],
+   "side_panel": {
+      "default_path": "index.html"
+   },
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "2.9"
+}
