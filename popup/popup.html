@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>文本替换扩展</title>
+        <link rel="stylesheet" href="bootstrap.min.css" />
+        <link rel="stylesheet" href="popup.css" />
+    </head>
+    <body>
+        <div class="container-fluid p-0">
+            <h5 class="mb-3">文本替换工具</h5>
+            <form>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="searchText" placeholder="搜索文本" />
+                </div>
+                <div class="form-group">
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="replaceText"
+                        placeholder="替换文本，正则下支持：$1, $2, $3, ..."
+                    />
+                </div>
+                <div class="form-group">
+                    <select class="form-control" id="matchType">
+                        <option value="normal">普通匹配</option>
+                        <option value="regex">正则表达式</option>
+                    </select>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="caseSensitive" />
+                    <label class="form-check-label" for="caseSensitive">大小写敏感</label>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="startElementId" placeholder="起始元素ID (可选)" />
+                </div>
+                <div class="btn-group d-flex mb-3" role="group">
+                    <button type="button" class="btn btn-highlight" id="highlightButton">高亮</button>
+                    <button type="button" class="btn btn-replace" id="replaceButton">替换</button>
+                </div>
+            </form>
+            <footer class="text-center">
+                <p id="stats">匹配: 0 | 替换: 0</p>
+            </footer>
+        </div>
+
+        <script src="jquery-3.6.4.min.js"></script>
+        <script src="bootstrap.min.js"></script>
+        <script src="popup.js"></script>
+    </body>
+</html>
