@@ -34,50 +34,78 @@ function highlightText(searchText, matchType, caseSensitive, startElementId) {
     console.log(
         `开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
     );
-    let matchCount = 0;
     const highlightColor = "yellow";
 
-    // 如果指定了起始元素ID，从该元素开始搜索，否则从body开始
-    const startElement = startElementId ? document.getElementById(startElementId) : document.body;
-
+    const startElement = getStartElement(startElementId);
     if (!startElement) {
         console.error("起始元素未找到");
         return 0;
     }
 
-    function highlightTextInNode(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            const text = node.textContent;
-            let matches;
+    const regex = createSearchRegex(searchText, matchType, caseSensitive);
+    const matchCount = processNodeAndHighlight(startElement, regex, highlightColor);
 
-            if (matchType === "normal") {
-                const flags = caseSensitive ? "g" : "gi";
-                const regex = new RegExp(escapeRegExp(searchText), flags);
-                matches = text.match(regex);
-            } else if (matchType === "regex") {
-                const flags = caseSensitive ? "g" : "gi";
-                const regex = new RegExp(searchText, flags);
-                matches = text.match(regex);
-            }
+    console.log(`高亮完成，总共找到 ${matchCount} 个匹配`);
+    return matchCount;
+}
 
-            if (matches) {
-                matchCount += matches.length;
-                console.log(`在节点中找到 ${matches.length} 个匹配`);
-                const span = document.createElement("span");
-                span.innerHTML = text.replace(
-                    new RegExp(matches[0], "g"),
-                    `<mark class="extension-highlight" style="background-color: ${highlightColor};">$&</mark>`
-                );
-                node.parentNode.replaceChild(span, node);
-            }
-        } else if (node.nodeType === Node.ELEMENT_NODE && node.childNodes) {
-            node.childNodes.forEach(highlightTextInNode);
+function getStartElement(startElementId) {
+    return startElementId ? document.getElementById(startElementId) : document.body;
+}
+
+function processNodeAndHighlight(node, regex, highlightColor) {
+    let matchCount = 0;
+
+    if (node.nodeType === Node.TEXT_NODE) {
+        matchCount += applyHighlightToTextNode(node, regex, highlightColor);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.tagName.toLowerCase() === "iframe") {
+            matchCount += processIframeContent(node, regex, highlightColor);
+        } else {
+            node.childNodes.forEach(childNode => {
+                matchCount += processNodeAndHighlight(childNode, regex, highlightColor);
+            });
         }
     }
 
-    highlightTextInNode(startElement);
-    console.log(`高亮完成，总共找到 ${matchCount} 个匹配`);
     return matchCount;
+}
+
+function applyHighlightToTextNode(textNode, regex, highlightColor) {
+    const text = textNode.textContent;
+    const matches = text.match(regex);
+
+    if (matches) {
+        const span = document.createElement("span");
+        span.innerHTML = text.replace(
+            regex,
+            `<mark class="extension-highlight" style="background-color: ${highlightColor};">$&</mark>`
+        );
+        textNode.parentNode.replaceChild(span, textNode);
+        return matches.length;
+    }
+
+    return 0;
+}
+
+function processIframeContent(iframeNode, regex, highlightColor) {
+    try {
+        console.log("访问 iframe 内容:", iframeNode.src);
+        const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
+        return processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
+    } catch (e) {
+        console.error("无法访问 iframe 内容, 错误:", e);
+        return 0;
+    }
+}
+
+function createSearchRegex(searchText, matchType, caseSensitive) {
+    const flags = caseSensitive ? "g" : "gi";
+    if (matchType === "normal") {
+        return new RegExp(escapeRegExp(searchText), flags);
+    } else if (matchType === "regex") {
+        return new RegExp(searchText, flags);
+    }
 }
 
 function escapeRegExp(string) {
