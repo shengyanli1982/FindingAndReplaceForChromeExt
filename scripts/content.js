@@ -4,6 +4,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "highlight") {
         console.log("开始执行高亮操作");
         sendResponse({ matchCount: highlightText(request) });
+    } else if (request.action === "replace") {
+        console.log("开始执行替换操作");
+        sendResponse(replaceText(request));
     } else if (request.action === "removeHighlights") {
         sendResponse({ message: "所有高亮已移除" });
     }
@@ -104,6 +107,65 @@ function createSearchRegex(searchText, matchType, caseSensitive) {
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function replaceText({ searchText, replaceText, matchType, caseSensitive, startElementId }) {
+    console.log(
+        `开始替换文本。搜索文本: "${searchText}", 替换文本: "${replaceText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
+    );
+    const startElement = startElementId ? document.getElementById(startElementId) : document.body;
+    if (!startElement) {
+        console.error("起始元素未找到");
+        return { matchCount: 0, replaceCount: 0 };
+    }
+    const regex = createSearchRegex(searchText, matchType, caseSensitive);
+    const result = processNodeAndReplace(startElement, regex, replaceText);
+    console.log(`总共替换了 ${result.replaceCount} 个匹配项`);
+    return result;
+}
+
+function processNodeAndReplace(node, regex, replaceText) {
+    let matchCount = 0;
+    let replaceCount = 0;
+    if (node.nodeType === Node.TEXT_NODE) {
+        const result = applyReplaceToTextNode(node, regex, replaceText);
+        matchCount += result.matchCount;
+        replaceCount += result.replaceCount;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.tagName.toLowerCase() === "iframe") {
+            const result = processIframeContentForReplace(node, regex, replaceText);
+            matchCount += result.matchCount;
+            replaceCount += result.replaceCount;
+        } else if (!node.classList.contains("extension-highlight-wrapper")) {
+            node.childNodes.forEach(childNode => {
+                const result = processNodeAndReplace(childNode, regex, replaceText);
+                matchCount += result.matchCount;
+                replaceCount += result.replaceCount;
+            });
+        }
+    }
+    return { matchCount, replaceCount };
+}
+
+function applyReplaceToTextNode(textNode, regex, replaceText) {
+    const text = textNode.textContent;
+    const matches = text.match(regex);
+    if (matches) {
+        const newText = text.replace(regex, replaceText);
+        textNode.textContent = newText;
+        return { matchCount: matches.length, replaceCount: matches.length };
+    }
+    return { matchCount: 0, replaceCount: 0 };
+}
+
+function processIframeContentForReplace(iframeNode, regex, replaceText) {
+    try {
+        const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
+        return processNodeAndReplace(iframeDocument.body, regex, replaceText);
+    } catch (e) {
+        console.error("无法访问 iframe 内容, 错误:", e);
+        return { matchCount: 0, replaceCount: 0 };
+    }
 }
 
 console.log("Find and replace extension content script 已加载");

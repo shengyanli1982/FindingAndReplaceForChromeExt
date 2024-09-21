@@ -25,14 +25,41 @@ function handleHighlight() {
         response => {
             if (response?.matchCount !== undefined) {
                 updateStats(response.matchCount, 0);
+            } else {
+                updateStats(-1, -1);
+                console.error("无法更新统计数据:", response);
             }
         }
     );
 }
 
 function handleReplace() {
-    // 替换功能的实现将在未来添加
-    console.log("替换功能尚未实现");
+    const searchText = document.getElementById("searchText").value.trim();
+    const replaceText = document.getElementById("replaceText").value;
+
+    if (!searchText) {
+        console.log("搜索文本为空，无法执行替换操作");
+        return;
+    }
+
+    sendMessageToActiveTab(
+        {
+            action: "replace",
+            searchText,
+            replaceText,
+            matchType: document.getElementById("matchType").value,
+            caseSensitive: document.getElementById("caseSensitive").checked,
+            startElementId: document.getElementById("startElementId").value,
+        },
+        response => {
+            if (response?.matchCount !== undefined && response?.replaceCount !== undefined) {
+                updateStats(response.matchCount, response.replaceCount);
+            } else {
+                updateStats(-1, -1);
+                console.error("无法更新统计数据:", response);
+            }
+        }
+    );
 }
 
 function updateStats(matchCount, replaceCount) {
