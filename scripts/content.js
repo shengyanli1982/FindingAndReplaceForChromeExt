@@ -45,7 +45,6 @@ function highlightText(searchText, matchType, caseSensitive, startElementId) {
     const regex = createSearchRegex(searchText, matchType, caseSensitive);
     const matchCount = processNodeAndHighlight(startElement, regex, highlightColor);
 
-    console.log(`高亮完成，总共找到 ${matchCount} 个匹配`);
     return matchCount;
 }
 
@@ -90,7 +89,7 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
 
 function processIframeContent(iframeNode, regex, highlightColor) {
     try {
-        console.log("访问 iframe 内容:", iframeNode.src);
+        console.log("访问 iframe 内容:", iframeNode.src || "");
         const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
         return processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
     } catch (e) {
@@ -112,4 +111,4 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-console.log("content script 已加载");
+console.log("Find and replace extension content script 已加载");
