@@ -1,28 +1,25 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("收到消息:", request);
+    removeHighlights(request);
     if (request.action === "highlight") {
         console.log("开始执行高亮操作");
-        removeHighlights();
-        sendResponse({
-            matchCount: highlightText(
-                request.searchText,
-                request.matchType,
-                request.caseSensitive,
-                request.startElementId
-            ),
-        });
+        sendResponse({ matchCount: highlightText(request) });
     } else if (request.action === "removeHighlights") {
-        removeHighlights();
         sendResponse({ message: "所有高亮已移除" });
     }
     return true;
 });
 
-function removeHighlights() {
+function removeHighlights({ startElementId }) {
     console.log("开始移除所有旧高亮");
-    const mainDocumentCount = removeHighlightsFromDocument(document);
+    const startElement = startElementId ? document.getElementById(startElementId) : document.body;
+    if (!startElement) {
+        console.error("起始元素未找到");
+        return 0;
+    }
+    const mainDocumentCount = removeHighlightsFromDocument(startElement);
     let iframeCount = 0;
-    document.querySelectorAll("iframe").forEach(iframe => {
+    startElement.querySelectorAll("iframe").forEach(iframe => {
         try {
             iframeCount += removeHighlightsFromDocument(iframe.contentDocument || iframe.contentWindow.document);
         } catch (e) {
@@ -36,7 +33,7 @@ function removeHighlightsFromDocument(doc) {
     let removedCount = 0;
     doc.querySelectorAll("span.extension-highlight-wrapper").forEach(wrapper => {
         if (wrapper.parentNode) {
-            const textNode = doc.createTextNode(wrapper.textContent);
+            const textNode = document.createTextNode(wrapper.textContent);
             wrapper.parentNode.replaceChild(textNode, wrapper);
             removedCount += wrapper.querySelectorAll("mark").length;
         }
@@ -44,7 +41,7 @@ function removeHighlightsFromDocument(doc) {
     return removedCount;
 }
 
-function highlightText(searchText, matchType, caseSensitive, startElementId) {
+function highlightText({ searchText, matchType, caseSensitive, startElementId }) {
     console.log(
         `开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
     );
@@ -102,8 +99,7 @@ function processIframeContent(iframeNode, regex, highlightColor) {
 }
 
 function createSearchRegex(searchText, matchType, caseSensitive) {
-    const flags = caseSensitive ? "g" : "gi";
-    return new RegExp(matchType === "normal" ? escapeRegExp(searchText) : searchText, flags);
+    return new RegExp(matchType === "normal" ? escapeRegExp(searchText) : searchText, caseSensitive ? "g" : "gi");
 }
 
 function escapeRegExp(string) {
