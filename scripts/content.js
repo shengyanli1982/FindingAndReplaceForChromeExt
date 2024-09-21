@@ -9,7 +9,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             request.caseSensitive,
             request.startElementId
         );
-        console.log(`高亮操作完成，匹配数量: ${matchCount}`);
         sendResponse({ matchCount: matchCount });
     } else if (request.action === "removeHighlights") {
         removeHighlights();
@@ -19,15 +18,36 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 function removeHighlights() {
-    console.log("开始移除旧的高亮");
-    const highlights = document.querySelectorAll("mark.extension-highlight");
-    console.log(`找到 ${highlights.length} 个旧的高亮`);
-    highlights.forEach(highlight => {
-        const parent = highlight.parentNode;
-        parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
-        parent.normalize(); // 合并相邻的文本节点
+    console.log("开始移除所有旧高亮");
+
+    // 处理主文档
+    const mainDocumentCount = removeHighlightsFromDocument(document);
+    console.log(`主文档旧高亮数: ${mainDocumentCount}`);
+    // 处理所有 iframe
+    const iframes = document.querySelectorAll("iframe");
+    let iframeCount = 0;
+    iframes.forEach(iframe => {
+        try {
+            const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+            iframeCount += removeHighlightsFromDocument(iframeDocument);
+            console.log(`访问 iframe 内容: ${iframe.src} 旧高亮数: ${iframeCount}`);
+        } catch (e) {
+            console.error("无法访问 iframe 内容，错误:", e);
+        }
     });
-    console.log("旧的高亮已移除");
+
+    console.log(`总共移除了 ${mainDocumentCount + iframeCount} 个旧高亮`);
+}
+
+function removeHighlightsFromDocument(doc) {
+    const highlights = doc.querySelectorAll("mark.extension-highlight");
+    highlights.forEach(highlight => {
+        const span = highlight.parentNode;
+        const spanParent = span.parentNode;
+        spanParent.replaceChild(doc.createTextNode(span.textContent), span);
+        spanParent.normalize(); // 合并相邻的文本节点
+    });
+    return highlights.length;
 }
 
 function highlightText(searchText, matchType, caseSensitive, startElementId) {
@@ -44,6 +64,8 @@ function highlightText(searchText, matchType, caseSensitive, startElementId) {
 
     const regex = createSearchRegex(searchText, matchType, caseSensitive);
     const matchCount = processNodeAndHighlight(startElement, regex, highlightColor);
+
+    console.log(`总共高亮了 ${matchCount} 个匹配项`);
 
     return matchCount;
 }
@@ -76,6 +98,7 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
 
     if (matches) {
         const span = document.createElement("span");
+        span.className = "extension-highlight-wrapper";
         span.innerHTML = text.replace(
             regex,
             `<mark class="extension-highlight" style="background-color: ${highlightColor};">$&</mark>`
@@ -89,9 +112,10 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
 
 function processIframeContent(iframeNode, regex, highlightColor) {
     try {
-        console.log("访问 iframe 内容:", iframeNode.src || "");
         const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
-        return processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
+        const matchCount = processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
+        console.log(`访问 iframe 内容: ${iframeNode.src || ""} 高亮数: ${matchCount}`);
+        return matchCount;
     } catch (e) {
         console.error("无法访问 iframe 内容, 错误:", e);
         return 0;
