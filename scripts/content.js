@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 request.matchType,
                 request.caseSensitive,
                 request.startElementId
-            )
+            ),
         });
     } else if (request.action === "removeHighlights") {
         removeHighlights();
@@ -45,7 +45,9 @@ function removeHighlightsFromDocument(doc) {
 }
 
 function highlightText(searchText, matchType, caseSensitive, startElementId) {
-    console.log(`开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`);
+    console.log(
+        `开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
+    );
     const startElement = startElementId ? document.getElementById(startElementId) : document.body;
     if (!startElement) {
         console.error("起始元素未找到");
@@ -79,8 +81,9 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
     if (matches) {
         const span = document.createElement("span");
         span.className = "extension-highlight-wrapper";
-        span.innerHTML = text.replace(regex, match => 
-            `<mark class="extension-highlight" style="background-color: ${highlightColor};">${match}</mark>`
+        span.innerHTML = text.replace(
+            regex,
+            match => `<mark class="extension-highlight" style="background-color: ${highlightColor};">${match}</mark>`
         );
         textNode.parentNode.replaceChild(span, textNode);
         return matches.length;
