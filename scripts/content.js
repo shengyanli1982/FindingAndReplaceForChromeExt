@@ -40,14 +40,33 @@ function removeHighlights() {
 }
 
 function removeHighlightsFromDocument(doc) {
-    const highlights = doc.querySelectorAll("mark.extension-highlight");
-    highlights.forEach(highlight => {
-        const span = highlight.parentNode;
-        const spanParent = span.parentNode;
-        spanParent.replaceChild(doc.createTextNode(span.textContent), span);
-        spanParent.normalize(); // 合并相邻的文本节点
+    const wrappers = doc.querySelectorAll("span.extension-highlight-wrapper");
+    let removedCount = 0;
+
+    wrappers.forEach(wrapper => {
+        const parent = wrapper.parentNode;
+        if (parent) {
+            // 创建一个新的文本节点来存储所有内容
+            let textContent = "";
+
+            // 遍历wrapper的子节点，提取文本内容
+            wrapper.childNodes.forEach(child => {
+                textContent += child.textContent;
+                if (child.nodeType === Node.ELEMENT_NODE && child.tagName.toLowerCase() === "mark") {
+                    removedCount++;
+                }
+            });
+
+            // 创建新的文本节点
+            const textNode = doc.createTextNode(textContent);
+
+            // 替换原来的wrapper
+            parent.replaceChild(textNode, wrapper);
+            parent.normalize(); // 合并相邻的文本节点
+        }
     });
-    return highlights.length;
+
+    return removedCount;
 }
 
 function highlightText(searchText, matchType, caseSensitive, startElementId) {
@@ -83,6 +102,10 @@ function processNodeAndHighlight(node, regex, highlightColor) {
         if (node.tagName.toLowerCase() === "iframe") {
             matchCount += processIframeContent(node, regex, highlightColor);
         } else {
+            // 跳过已经是高亮包装器的节点
+            if (node.classList && node.classList.contains("extension-highlight-wrapper")) {
+                return matchCount;
+            }
             node.childNodes.forEach(childNode => {
                 matchCount += processNodeAndHighlight(childNode, regex, highlightColor);
             });
@@ -99,10 +122,26 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
     if (matches) {
         const span = document.createElement("span");
         span.className = "extension-highlight-wrapper";
-        span.innerHTML = text.replace(
-            regex,
-            `<mark class="extension-highlight" style="background-color: ${highlightColor};">$&</mark>`
-        );
+
+        let lastIndex = 0;
+        let html = "";
+
+        for (const match of matches) {
+            const index = text.indexOf(match, lastIndex);
+
+            // 添加匹配前的文本
+            html += text.slice(lastIndex, index);
+
+            // 添加高亮的匹配文本
+            html += `<mark class="extension-highlight" style="background-color: ${highlightColor};">${match}</mark>`;
+
+            lastIndex = index + match.length;
+        }
+
+        // 添加最后一个匹配后的剩余文本
+        html += text.slice(lastIndex);
+
+        span.innerHTML = html;
         textNode.parentNode.replaceChild(span, textNode);
         return matches.length;
     }
