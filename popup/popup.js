@@ -1,3 +1,4 @@
+// 页面加载完成后的初始化
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOMContentLoaded 事件已触发");
 
@@ -5,6 +6,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("replaceButton")?.addEventListener("click", handleReplace);
 });
 
+// 辅助函数：向活动标签页发送消息
+function sendMessageToActiveTab(message, callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, message, callback);
+    });
+}
+
+// 辅助函数：更新统计信息
+function updateStats(matchCount, replaceCount) {
+    document.getElementById("stats").textContent = `匹配: ${matchCount} | 替换: ${replaceCount}`;
+}
+
+// 主要功能：处理高亮
 function handleHighlight() {
     const searchText = document.getElementById("searchText").value.trim();
 
@@ -33,6 +47,7 @@ function handleHighlight() {
     );
 }
 
+// 主要功能：处理替换
 function handleReplace() {
     const searchText = document.getElementById("searchText").value.trim();
     const replaceText = document.getElementById("replaceText").value;
@@ -60,14 +75,4 @@ function handleReplace() {
             }
         }
     );
-}
-
-function updateStats(matchCount, replaceCount) {
-    document.getElementById("stats").textContent = `匹配: ${matchCount} | 替换: ${replaceCount}`;
-}
-
-function sendMessageToActiveTab(message, callback) {
-    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-        chrome.tabs.sendMessage(tab.id, message, callback);
-    });
 }
