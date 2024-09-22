@@ -1,17 +1,24 @@
+/* 全局样式 */
 body {
     width: 350px;
     padding: 20px;
     background-color: #f8f9fa;
 }
 
+/* 排版 */
 h5 {
     color: #333;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
+/* 表单元素通用样式 */
 .form-group,
-.form-check {
-    margin-bottom: 15px;
+.form-check,
+.btn-group,
+#searchText,
+#replaceText,
+#matchType {
+    margin-bottom: 18px;
 }
 
 .form-control:focus {
@@ -19,10 +26,13 @@ h5 {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+.form-check {
+    margin-top: -2px;
+}
+
+/* 按钮和按钮组 */
 .btn-group {
     width: 100%;
-    margin-top: 20px;
-    margin-bottom: 20px;
 }
 
 .btn-group .btn {
@@ -30,9 +40,44 @@ h5 {
     transition: all 0.2s ease-in-out;
 }
 
+.btn-group.d-flex {
+    margin-top: 20px;
+}
+
+/* 工具栏 */
+.btn-toolbar {
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-toolbar .btn-group {
+    margin-bottom: 0;
+}
+
+.btn-toolbar .btn {
+    padding: 0.375rem 0.75rem;
+}
+
+/* 导航统计 */
+#nav-stats {
+    padding: 0 15px;
+    font-size: 0.9em;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1;
+}
+
+/* 特定元素 */
+#startElementId {
+    margin-top: 8px;
+}
+
+/* 页脚 */
 footer {
-    margin-top: 25px;
-    padding-top: 15px;
+    margin-top: 15px;
+    padding-top: 12px;
     border-top: 1px solid #dee2e6;
     font-size: 0.9em;
     color: #6c757d;
