@@ -1,11 +1,28 @@
 body {
     width: 350px;
-    padding: 15px;
+    padding: 20px;
     background-color: #f8f9fa;
+}
+
+h5 {
+    color: #333;
+    margin-bottom: 25px;
+}
+
+.form-group,
+.form-check {
+    margin-bottom: 15px;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .btn-group {
     width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .btn-group .btn {
@@ -13,51 +30,10 @@ body {
     transition: all 0.2s ease-in-out;
 }
 
-.btn-highlight {
-    background-color: #4caf50;
-    border-color: #4caf50;
-    color: white;
-}
-
-.btn-highlight:hover,
-.btn-highlight:focus {
-    background-color: #45a049;
-    border-color: #45a049;
-    color: white;
-}
-
-.btn-replace {
-    background-color: #2196f3;
-    border-color: #2196f3;
-    color: white;
-}
-
-.btn-replace:hover,
-.btn-replace:focus {
-    background-color: #0b7dda;
-    border-color: #0b7dda;
-    color: white;
-}
-
 footer {
-    margin-top: 15px;
-    padding-top: 10px;
+    margin-top: 25px;
+    padding-top: 15px;
     border-top: 1px solid #dee2e6;
     font-size: 0.9em;
     color: #6c757d;
-}
-
-.form-group,
-.form-check {
-    margin-bottom: 10px;
-}
-
-h5 {
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
