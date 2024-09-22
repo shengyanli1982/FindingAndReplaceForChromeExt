@@ -22,14 +22,32 @@ function removeHighlights({ startElementId }) {
     }
     const mainDocumentCount = removeHighlightsFromDocument(startElement);
     let iframeCount = 0;
+
     startElement.querySelectorAll("iframe").forEach(iframe => {
         try {
-            iframeCount += removeHighlightsFromDocument(iframe.contentDocument || iframe.contentWindow.document);
+            if (canAccessIframe(iframe)) {
+                iframeCount += removeHighlightsFromDocument(iframe.contentDocument || iframe.contentWindow.document);
+            } else {
+                console.log("无法访问 iframe 内容：可能是跨域限制");
+            }
         } catch (e) {
-            console.error("无法访问 iframe 内容，错误:", e);
+            console.log("处理 iframe 时发生错误:", e.message);
         }
     });
+
     console.log(`总共移除了 ${mainDocumentCount + iframeCount} 个旧高亮`);
+    return mainDocumentCount + iframeCount;
+}
+
+function canAccessIframe(iframe) {
+    try {
+        // 尝试访问 iframe 的 contentWindow 属性
+        // 如果可以访问，则返回 true
+        return !!iframe.contentWindow && !!iframe.contentWindow.document;
+    } catch (e) {
+        // 如果出现异常，说明无法访问
+        return false;
+    }
 }
 
 function removeHighlightsFromDocument(doc) {
@@ -93,6 +111,10 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
 
 function processIframeContent(iframeNode, regex, highlightColor) {
     try {
+        if (!canAccessIframe(iframeNode)) {
+            console.log("无法访问 iframe 内容：可能是跨域限制");
+            return 0;
+        }
         const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
         return processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
     } catch (e) {
@@ -160,6 +182,10 @@ function applyReplaceToTextNode(textNode, regex, replaceText) {
 
 function processIframeContentForReplace(iframeNode, regex, replaceText) {
     try {
+        if (!canAccessIframe(iframeNode)) {
+            console.log("无法访问 iframe 内容：可能是跨域限制");
+            return { matchCount: 0, replaceCount: 0 };
+        }
         const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
         return processNodeAndReplace(iframeDocument.body, regex, replaceText);
     } catch (e) {
