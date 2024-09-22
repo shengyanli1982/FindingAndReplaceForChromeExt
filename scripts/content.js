@@ -39,7 +39,7 @@ function canAccessIframe(iframe) {
 // 高亮相关函数
 function highlightText({ searchText, matchType, caseSensitive, startElementId }) {
     console.log(
-        `开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
+        `开始高亮文本。搜索文本: "${searchText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素 id: ${startElementId}`
     );
     const startElement = startElementId ? document.getElementById(startElementId) : document.body;
     if (!startElement) {
@@ -144,7 +144,7 @@ function removeHighlightsFromDocument(doc) {
 // 替换文本相关函数
 function replaceText({ searchText, replaceText, matchType, caseSensitive, startElementId }) {
     console.log(
-        `开始替换文本。搜索文本: "${searchText}", 替换文本: "${replaceText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素ID: ${startElementId}`
+        `开始替换文本。搜索文本: "${searchText}", 替换文本: "${replaceText}", 匹配类型: ${matchType}, 大小写敏感: ${caseSensitive}, 起始元素 id: ${startElementId}`
     );
     const startElement = startElementId ? document.getElementById(startElementId) : document.body;
     if (!startElement) {

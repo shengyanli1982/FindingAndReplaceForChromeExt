@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "author": "shengyanli1982",
     "description": "检查和替换页面上的文本，专门为 “【沉浸式翻译】” 设计。",
-    "permissions": ["activeTab"],
+    "permissions": ["activeTab", "storage"],
     "action": {
         "default_popup": "popup/popup.html"
     },

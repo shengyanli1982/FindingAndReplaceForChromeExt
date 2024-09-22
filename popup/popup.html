@@ -9,7 +9,10 @@
     </head>
     <body>
         <div class="container-fluid p-0">
-            <h5 class="mb-3">文本替换工具</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">文本替换工具</h5>
+                <a type="button" class="btn btn-link btn-sm" id="clearButton">清除内容</a>
+            </div>
             <form>
                 <div class="form-group">
                     <input type="text" class="form-control" id="searchText" placeholder="搜索文本" />
@@ -33,7 +36,7 @@
                     <label class="form-check-label" for="caseSensitive">大小写敏感</label>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" id="startElementId" placeholder="起始元素ID (可选)" />
+                    <input type="text" class="form-control" id="startElementId" placeholder="起始元素 id (可选)" />
                 </div>
                 <div class="btn-group d-flex mb-3" role="group">
                     <button type="button" class="btn btn-outline-primary" id="highlightButton">高亮</button>
