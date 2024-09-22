@@ -82,3 +82,8 @@ footer {
     font-size: 0.9em;
     color: #6c757d;
 }
+
+/* 输入框占位符样式 */
+::placeholder {
+    color: #adb5bd !important;
+}
