@@ -1,15 +1,24 @@
 // 主要的消息监听器
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("收到消息:", request);
-    removeHighlights(request);
     if (request.action === "highlight") {
         console.log("开始执行高亮操作");
-        sendResponse({ matchCount: highlightText(request) });
+        removeHighlights(request);
+        const matchCount = highlightText(request);
+        currentHighlightIndex = matchCount > 0 ? 0 : -1;
+        sendResponse({ matchCount });
     } else if (request.action === "replace") {
         console.log("开始执行替换操作");
+        removeHighlights(request);
         sendResponse(replaceText(request));
     } else if (request.action === "removeHighlights") {
+        removeHighlights(request);
+        highlightedElements = [];
+        currentHighlightIndex = -1;
         sendResponse({ message: "所有高亮已移除" });
+    } else if (request.action === "navigate") {
+        navigateHighlights(request.direction, sendResponse);
+        return true; // 保持消息通道开放以进行异步响应
     }
     return true;
 });
@@ -49,6 +58,7 @@ function highlightText({ searchText, matchType, caseSensitive, startElementId })
     const regex = createSearchRegex(searchText, matchType, caseSensitive);
     const matchCount = processNodeAndHighlight(startElement, regex, "yellow");
     console.log(`总共高亮了 ${matchCount} 个匹配项`);
+    highlightedElements = document.querySelectorAll("mark.extension-highlight");
     return matchCount;
 }
 
@@ -106,8 +116,8 @@ function removeHighlights({ startElementId }) {
     console.log("开始移除所有旧高亮");
     const startElement = startElementId ? document.getElementById(startElementId) : document.body;
     if (!startElement) {
-        console.error("起始元素未找到");
-        return 0;
+        console.log("起始元素未找到");
+        return { removedCount: 0, message: "起始元素未找到" };
     }
     const mainDocumentCount = removeHighlightsFromDocument(startElement);
     let iframeCount = 0;
@@ -124,8 +134,13 @@ function removeHighlights({ startElementId }) {
         }
     });
 
-    console.log(`总共移除了 ${mainDocumentCount + iframeCount} 个旧高亮`);
-    return mainDocumentCount + iframeCount;
+    const totalRemovedCount = mainDocumentCount + iframeCount;
+    console.log(`总共移除了 ${totalRemovedCount} 个旧高亮`);
+    
+    highlightedElements = [];
+    currentHighlightIndex = -1;
+
+    return { removedCount: totalRemovedCount, message: "所有高亮已移除" };
 }
 
 // 从文档中移除高亮
@@ -181,7 +196,7 @@ function processNodeAndReplace(node, regex, replaceText) {
     return { matchCount, replaceCount };
 }
 
-// 对文本节点应用替换
+// 对文本点应用替换
 function applyReplaceToTextNode(textNode, regex, replaceText) {
     const text = textNode.textContent;
     const matches = text.match(regex);
@@ -210,3 +225,35 @@ function processIframeContentForReplace(iframeNode, regex, replaceText) {
 
 // 加载确认
 console.log("Find and replace extension content script 已加载");
+
+let highlightedElements = [];
+let currentHighlightIndex = -1;
+
+function navigateHighlights(direction, sendResponse) {
+    if (highlightedElements.length === 0) {
+        sendResponse({ currentIndex: 0, totalMatches: 0 });
+        return;
+    }
+
+    // 移除之前聚焦元素的红色边框
+    if (currentHighlightIndex !== -1) {
+        highlightedElements[currentHighlightIndex].style.border = "";
+    }
+
+    if (direction === "next") {
+        currentHighlightIndex = (currentHighlightIndex + 1) % highlightedElements.length;
+    } else if (direction === "previous") {
+        currentHighlightIndex = (currentHighlightIndex - 1 + highlightedElements.length) % highlightedElements.length;
+    }
+
+    const currentElement = highlightedElements[currentHighlightIndex];
+    currentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // 添加红色边框到当前聚焦的元素
+    currentElement.style.border = "2px solid red";
+
+    sendResponse({
+        currentIndex: currentHighlightIndex + 1,
+        totalMatches: highlightedElements.length,
+    });
+}

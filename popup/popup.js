@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("highlightButton")?.addEventListener("click", handleHighlight);
     document.getElementById("replaceButton")?.addEventListener("click", handleReplace);
     document.getElementById("clearButton")?.addEventListener("click", handleClear);
+    document.getElementById("previousButton")?.addEventListener("click", handleNavPrevious);
+    document.getElementById("nextButton")?.addEventListener("click", handleNavNext);
+
+    // 初始化时禁用导航按钮
+    updateNavigationButtons(false);
+    updateNavStats({ currentIndex: 0, totalMatches: 0 });
 
     // 加载保存的内容
     loadSavedContent();
@@ -70,6 +76,11 @@ function handleClear() {
     document.getElementById("caseSensitive").checked = false;
     document.getElementById("startElementId").value = "";
     updateStats(0, 0);
+    updateNavigationButtons(false);
+    updateNavStats({ currentIndex: 0, totalMatches: 0 });
+    sendMessageToActiveTab({ action: "removeHighlights" }, response => {
+        console.log(response.message);
+    });
     saveContent();
 }
 
@@ -91,7 +102,12 @@ function handleHighlight() {
 
     if (!searchText) {
         console.log("搜索文本为空，移除所有高亮并更新统计");
-        sendMessageToActiveTab({ action: "removeHighlights" }, () => updateStats(0, 0));
+        sendMessageToActiveTab({ action: "removeHighlights" }, response => {
+            updateStats(0, 0);
+            updateNavigationButtons(false);
+            updateNavStats({ currentIndex: 0, totalMatches: 0 });
+            console.log(response.message);
+        });
         return;
     }
 
@@ -106,8 +122,12 @@ function handleHighlight() {
         response => {
             if (response?.matchCount !== undefined) {
                 updateStats(response.matchCount, 0);
+                updateNavigationButtons(response.matchCount > 0);
+                updateNavStats({ currentIndex: response.matchCount > 0 ? 1 : 0, totalMatches: response.matchCount });
             } else {
                 updateStats(-1, -1);
+                updateNavigationButtons(false);
+                updateNavStats({ currentIndex: 0, totalMatches: 0 });
                 console.error("无法更新统计数据!!");
             }
             saveContent();
@@ -137,6 +157,9 @@ function handleReplace() {
         response => {
             if (response?.matchCount !== undefined && response?.replaceCount !== undefined) {
                 updateStats(response.matchCount, response.replaceCount);
+                // 替换后禁用导航按钮并重置导航统计
+                updateNavigationButtons(false);
+                updateNavStats({ currentIndex: 0, totalMatches: 0 });
             } else {
                 updateStats(-1, -1);
                 console.error("无法更新统计数据!!");
@@ -144,4 +167,36 @@ function handleReplace() {
             saveContent();
         }
     );
+}
+
+// 辅助函数：更新导航按钮状态
+function updateNavigationButtons(enabled) {
+    const prevButton = document.getElementById("previousButton");
+    const nextButton = document.getElementById("nextButton");
+
+    prevButton.classList.toggle("disabled", !enabled);
+    nextButton.classList.toggle("disabled", !enabled);
+
+    prevButton.disabled = !enabled;
+    nextButton.disabled = !enabled;
+
+    prevButton.setAttribute("aria-disabled", !enabled);
+    nextButton.setAttribute("aria-disabled", !enabled);
+}
+
+// 辅助函数：处理导航请求
+function handleNavPrevious() {
+    sendMessageToActiveTab({ action: "navigate", direction: "previous" }, updateNavStats);
+}
+
+// 辅助函数：处理导航请求
+function handleNavNext() {
+    sendMessageToActiveTab({ action: "navigate", direction: "next" }, updateNavStats);
+}
+
+// 辅助函数：更新导航统计信息
+function updateNavStats(response) {
+    if (response && response.currentIndex !== undefined && response.totalMatches !== undefined) {
+        document.getElementById("nav-stats").textContent = `${response.currentIndex}/${response.totalMatches}`;
+    }
 }
