@@ -2,14 +2,17 @@
 
 # Chrome Extension: Find and Replace
 
-This Chrome extension allows you to search for and replace text within the active tab's content. It supports both global and case-sensitive searches and provides a popup interface for easy access.
+This Chrome extension allows you to search for and replace text within the active tab's content. It supports both normal and regular expression searches, case-sensitive options, and provides a user-friendly popup interface for easy access.
 
 ## Features
 
--   Support search for text using regular expressions.
--   Highlight search results.
--   Replace text within specific HTML elements.
--   Process content within iframes.
+-   Support search for text using normal matching or regular expressions.
+-   Highlight search results with navigation between matches.
+-   Replace text within web page content.
+-   Option to specify a starting element ID for targeted searches.
+-   Case-sensitive search option.
+-   Persistent storage of search settings.
+-   Process content within iframes (where accessible).
 
 ## Installation
 
@@ -31,10 +34,15 @@ Interface preview:
 
 ![win](./assets/popup.png)
 
-1. Click the extension icon in the Chrome toolbar.
-2. Use the popup to enter your search and replace text, select match type, and specify the HTML element to start from.
-3. Click "Highlight" to highlight all occurrences of the search text.
-4. Click "Replace" to replace all occurrences of the search text with the specified replacement.
+1. Click the extension icon in the Chrome toolbar to open the popup.
+2. Enter your search text and (optionally) replacement text.
+3. Choose between normal matching or regular expression.
+4. Toggle case sensitivity if needed.
+5. Optionally, specify a starting element ID to narrow the search scope.
+6. Click "Highlight" to highlight all occurrences of the search text.
+7. Use the navigation buttons to move between matches.
+8. Click "Replace" to replace all occurrences of the search text with the specified replacement.
+9. Click "Clear Content" to reset all fields and remove highlights.
 
 You can view the extension's process in the browser's console.
 
@@ -42,14 +50,15 @@ You can view the extension's process in the browser's console.
 
 ## Notes
 
--   The extension will only work on the current tab.
--   The extension will not work on all websites due to browser security policies.
+-   The extension will only work on the current active tab.
+-   The extension may not work on all websites due to browser security policies.
+-   Content within iframes will be processed if accessible.
 
 ## Development
 
 ### 1. Popup Interface
 
-The popup interface is defined in `popup/popup.html` and styled using `popup.css`. It includes input fields for search and replace text, options for match type and case sensitivity, and buttons to trigger highlight and replace actions.
+The popup interface is defined in `popup/popup.html` and styled using Bootstrap and custom CSS in `popup.css`. It includes input fields for search and replace text, options for match type and case sensitivity, and buttons to trigger highlight, replace, and navigation actions.
 
 ### 2. JavaScript Functionality
 
@@ -57,23 +66,21 @@ The main JavaScript logic is implemented in `popup/popup.js` and `scripts/conten
 
 #### `popup/popup.js`
 
--   **Event Listeners**: Initializes event listeners for the highlight and replace buttons.
--   **sendMessageToActiveTab**: Sends messages to the active tab to perform highlight or replace actions.
--   **updateStats**: Updates the statistics displayed in the popup.
--   **handleHighlight**: Handles the highlight action by sending a message to the active tab.
--   **handleReplace**: Handles the replace action by sending a message to the active tab.
+-   Initializes event listeners for all buttons and handles user interactions.
+-   Manages the state of the popup interface, including navigation buttons and statistics.
+-   Handles storage and retrieval of user settings using either `chrome.storage.local` or `localStorage`.
+-   Sends messages to the active tab to perform highlight, replace, and navigation actions.
 
 #### `scripts/content.js`
 
--   **Message Listener**: Listens for messages from the popup and performs the corresponding actions (highlight, replace, remove highlights).
--   **createSearchRegex**: Creates a regular expression based on the search text and match type.
--   **highlightText**: Highlights all occurrences of the search text in the document.
--   **replaceText**: Replaces all occurrences of the search text with the replacement text in the document.
--   **removeHighlights**: Removes all highlights from the document.
+-   Listens for messages from the popup and performs the corresponding actions (highlight, replace, remove highlights, navigate).
+-   Implements text searching, highlighting, and replacing functionality.
+-   Handles navigation between highlighted matches.
+-   Processes content within accessible iframes.
 
-### 3. Iframe Handling
+### 3. Storage
 
-The extension can process content within iframes, provided it has access to the iframe's content. This is handled by the `canAccessIframe` function in `scripts/content.js`.
+The extension uses `chrome.storage.local` if available, otherwise falls back to `localStorage` for persisting user settings across sessions.
 
 ## Contributing
 
