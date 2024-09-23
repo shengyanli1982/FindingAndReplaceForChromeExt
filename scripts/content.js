@@ -2,29 +2,38 @@
 // 处理来自扩展的各种消息请求，如高亮、替换、移除高亮和导航等
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("收到消息:", request);
-    if (request.action === "highlight") {
-        // 处理高亮操作
-        console.log("开始执行高亮操作");
-        removeHighlights(request);
-        const matchCount = highlightText(request);
-        currentHighlightIndex = matchCount > 0 ? 0 : -1;
-        sendResponse({ matchCount });
-    } else if (request.action === "replace") {
-        // 处理替换操作
-        console.log("开始执行替换操作");
-        removeHighlights(request);
-        sendResponse(replaceText(request));
-    } else if (request.action === "removeHighlights") {
-        // 移除所有高亮
-        removeHighlights(request);
-        highlightedElements = [];
-        currentHighlightIndex = -1;
-        sendResponse({ message: "所有高亮已移除" });
-    } else if (request.action === "navigate") {
-        // 在高亮元素间导航
-        navigateHighlights(request.direction, sendResponse);
-        return true; // 保持消息通道开放以进行异步响应
+
+    switch (request.action) {
+        case "highlight":
+            console.log("开始执行高亮操作");
+            removeHighlights(request);
+            const matchCount = highlightText(request);
+            currentHighlightIndex = matchCount > 0 ? 0 : -1;
+            sendResponse({ matchCount });
+            break;
+
+        case "replace":
+            console.log("开始执行替换操作");
+            removeHighlights(request);
+            sendResponse(replaceText(request));
+            break;
+
+        case "removeHighlights":
+            removeHighlights(request);
+            highlightedElements = [];
+            currentHighlightIndex = -1;
+            sendResponse({ message: "所有高亮已移除" });
+            break;
+
+        case "navigate":
+            navigateHighlights(request.direction, sendResponse);
+            return true; // 保持消息通道开放以进行异步响应
+
+        default:
+            console.log("未知的操作:", request.action);
+            sendResponse({ error: "未知的操作" });
     }
+
     return true;
 });
 
