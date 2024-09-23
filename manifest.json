@@ -1,9 +1,9 @@
 {
     "manifest_version": 3,
     "name": "文本替换扩展",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "shengyanli1982",
-    "description": "检查和替换页面上的文本，专门为 “【沉浸式翻译】” 设计。",
+    "description": "检查和替换页面上的文本, 支持 “【沉浸式翻译】” Epub 图书制作器。",
     "permissions": ["activeTab", "storage"],
     "action": {
         "default_popup": "popup/popup.html"
