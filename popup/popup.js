@@ -3,6 +3,7 @@ const storage = chrome.storage && chrome.storage.local ? chrome.storage.local : 
 
 // 页面加载完成后的初始化
 document.addEventListener("DOMContentLoaded", () => {
+    // 为按钮添加事件监听器
     document.getElementById("highlightButton")?.addEventListener("click", handleHighlight);
     document.getElementById("replaceButton")?.addEventListener("click", handleReplace);
     document.getElementById("clearButton")?.addEventListener("click", handleClear);
@@ -32,6 +33,7 @@ function handleHighlight() {
         return;
     }
 
+    // 发送高亮请求到活动标签页
     sendMessageToActiveTab(
         {
             action: "highlight",
@@ -66,6 +68,7 @@ function handleReplace() {
         return;
     }
 
+    // 发送替换请求到活动标签页
     sendMessageToActiveTab(
         {
             action: "replace",
@@ -92,6 +95,7 @@ function handleReplace() {
 
 // 处理清除功能
 function handleClear() {
+    // 清空输入框和复选框
     document.getElementById("searchText").value = "";
     document.getElementById("replaceText").value = "";
     document.getElementById("matchType").value = "normal";
@@ -100,6 +104,7 @@ function handleClear() {
     updateStats(0, 0);
     updateNavigationButtons(false);
     updateNavStats({ currentIndex: 0, totalMatches: 0 });
+    // 发送移除高亮请求到活动标签页
     sendMessageToActiveTab({ action: "removeHighlights" }, response => {
         console.log(response.message);
     });
@@ -118,21 +123,18 @@ function handleNavNext() {
 
 // 从存储中加载保存的内容
 function loadSavedContent() {
+    const keys = ["searchText", "replaceText", "matchType", "caseSensitive", "startElementId"];
+    
     if (storage === localStorage) {
         // 使用 localStorage
-        const result = {
-            searchText: localStorage.getItem("searchText") || "",
-            replaceText: localStorage.getItem("replaceText") || "",
-            matchType: localStorage.getItem("matchType") || "normal",
-            caseSensitive: localStorage.getItem("caseSensitive") === "true",
-            startElementId: localStorage.getItem("startElementId") || "",
-        };
+        const result = keys.reduce((acc, key) => {
+            acc[key] = localStorage.getItem(key) || "";
+            return acc;
+        }, {});
         updateUI(result);
     } else {
         // 使用 chrome.storage.local
-        storage.get(["searchText", "replaceText", "matchType", "caseSensitive", "startElementId"], result => {
-            updateUI(result);
-        });
+        storage.get(keys, updateUI);
     }
 }
 
@@ -148,14 +150,12 @@ function saveContent() {
 
     if (storage === localStorage) {
         // 使用 localStorage
-        Object.keys(content).forEach(key => localStorage.setItem(key, content[key]));
-        console.log("保存内容到 localStorage:", content);
+        Object.entries(content).forEach(([key, value]) => localStorage.setItem(key, value));
     } else {
         // 使用 chrome.storage.local
-        storage.set(content, () => {
-            console.log("保存内容到 chrome.storage.local:", content);
-        });
+        storage.set(content);
     }
+    console.log(`保存内容到 ${storage === localStorage ? 'localStorage' : 'chrome.storage.local'}:`, content);
 }
 
 // 更新UI元素的值
