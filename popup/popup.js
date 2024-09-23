@@ -1,4 +1,4 @@
-// 检查存储API是否可用
+// 检查存储API是否可用，优先使用chrome.storage.local，否则使用localStorage
 const storage = chrome.storage && chrome.storage.local ? chrome.storage.local : localStorage;
 
 // 页面加载完成后的初始化
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("previousButton")?.addEventListener("click", handleNavPrevious);
     document.getElementById("nextButton")?.addEventListener("click", handleNavNext);
 
-    // 初始化时禁用导航按钮
+    // 初始化时禁用导航按钮并重置导航统计
     updateNavigationButtons(false);
     updateNavStats({ currentIndex: 0, totalMatches: 0 });
 
@@ -17,86 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSavedContent();
 });
 
-// 加载保存的内容
-function loadSavedContent() {
-    if (storage === localStorage) {
-        // 使用 localStorage
-        const result = {
-            searchText: localStorage.getItem("searchText") || "",
-            replaceText: localStorage.getItem("replaceText") || "",
-            matchType: localStorage.getItem("matchType") || "normal",
-            caseSensitive: localStorage.getItem("caseSensitive") === "true",
-            startElementId: localStorage.getItem("startElementId") || "",
-        };
-        updateUI(result);
-    } else {
-        // 使用 chrome.storage.local
-        storage.get(["searchText", "replaceText", "matchType", "caseSensitive", "startElementId"], result => {
-            updateUI(result);
-        });
-    }
-}
-
-// 更新UI
-function updateUI(result) {
-    document.getElementById("searchText").value = result.searchText || "";
-    document.getElementById("replaceText").value = result.replaceText || "";
-    document.getElementById("matchType").value = result.matchType || "normal";
-    document.getElementById("caseSensitive").checked = result.caseSensitive || false;
-    document.getElementById("startElementId").value = result.startElementId || "";
-}
-
-// 保存内容
-function saveContent() {
-    const content = {
-        searchText: document.getElementById("searchText").value,
-        replaceText: document.getElementById("replaceText").value,
-        matchType: document.getElementById("matchType").value,
-        caseSensitive: document.getElementById("caseSensitive").checked,
-        startElementId: document.getElementById("startElementId").value,
-    };
-
-    if (storage === localStorage) {
-        // 使用 localStorage
-        Object.keys(content).forEach(key => localStorage.setItem(key, content[key]));
-        console.log("保存内容到 localStorage:", content);
-    } else {
-        // 使用 chrome.storage.local
-        storage.set(content, () => {
-            console.log("保存内容到 chrome.storage.local:", content);
-        });
-    }
-}
-
-// 处理清除按钮点击
-function handleClear() {
-    document.getElementById("searchText").value = "";
-    document.getElementById("replaceText").value = "";
-    document.getElementById("matchType").value = "normal";
-    document.getElementById("caseSensitive").checked = false;
-    document.getElementById("startElementId").value = "";
-    updateStats(0, 0);
-    updateNavigationButtons(false);
-    updateNavStats({ currentIndex: 0, totalMatches: 0 });
-    sendMessageToActiveTab({ action: "removeHighlights" }, response => {
-        console.log(response.message);
-    });
-    saveContent();
-}
-
-// 辅助函数：向活动标签页发送消息
-function sendMessageToActiveTab(message, callback) {
-    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-        chrome.tabs.sendMessage(tab.id, message, callback);
-    });
-}
-
-// 辅助函数：更新统计信息
-function updateStats(matchCount, replaceCount) {
-    document.getElementById("stats").textContent = `匹配: ${matchCount} | 替换: ${replaceCount}`;
-}
-
-// 主要功能：处理高亮
+// 处理高亮功能
 function handleHighlight() {
     const searchText = document.getElementById("searchText").value.trim();
 
@@ -135,7 +56,7 @@ function handleHighlight() {
     );
 }
 
-// 主要功能：处理替换
+// 处理替换功能
 function handleReplace() {
     const searchText = document.getElementById("searchText").value.trim();
     const replaceText = document.getElementById("replaceText").value;
@@ -169,7 +90,89 @@ function handleReplace() {
     );
 }
 
-// 辅助函数：更新导航按钮状态
+// 处理清除功能
+function handleClear() {
+    document.getElementById("searchText").value = "";
+    document.getElementById("replaceText").value = "";
+    document.getElementById("matchType").value = "normal";
+    document.getElementById("caseSensitive").checked = false;
+    document.getElementById("startElementId").value = "";
+    updateStats(0, 0);
+    updateNavigationButtons(false);
+    updateNavStats({ currentIndex: 0, totalMatches: 0 });
+    sendMessageToActiveTab({ action: "removeHighlights" }, response => {
+        console.log(response.message);
+    });
+    saveContent();
+}
+
+// 处理导航到上一个匹配项
+function handleNavPrevious() {
+    sendMessageToActiveTab({ action: "navigate", direction: "previous" }, updateNavStats);
+}
+
+// 处理导航到下一个匹配项
+function handleNavNext() {
+    sendMessageToActiveTab({ action: "navigate", direction: "next" }, updateNavStats);
+}
+
+// 从存储中加载保存的内容
+function loadSavedContent() {
+    if (storage === localStorage) {
+        // 使用 localStorage
+        const result = {
+            searchText: localStorage.getItem("searchText") || "",
+            replaceText: localStorage.getItem("replaceText") || "",
+            matchType: localStorage.getItem("matchType") || "normal",
+            caseSensitive: localStorage.getItem("caseSensitive") === "true",
+            startElementId: localStorage.getItem("startElementId") || "",
+        };
+        updateUI(result);
+    } else {
+        // 使用 chrome.storage.local
+        storage.get(["searchText", "replaceText", "matchType", "caseSensitive", "startElementId"], result => {
+            updateUI(result);
+        });
+    }
+}
+
+// 保存当前内容到存储
+function saveContent() {
+    const content = {
+        searchText: document.getElementById("searchText").value,
+        replaceText: document.getElementById("replaceText").value,
+        matchType: document.getElementById("matchType").value,
+        caseSensitive: document.getElementById("caseSensitive").checked,
+        startElementId: document.getElementById("startElementId").value,
+    };
+
+    if (storage === localStorage) {
+        // 使用 localStorage
+        Object.keys(content).forEach(key => localStorage.setItem(key, content[key]));
+        console.log("保存内容到 localStorage:", content);
+    } else {
+        // 使用 chrome.storage.local
+        storage.set(content, () => {
+            console.log("保存内容到 chrome.storage.local:", content);
+        });
+    }
+}
+
+// 更新UI元素的值
+function updateUI(result) {
+    document.getElementById("searchText").value = result.searchText || "";
+    document.getElementById("replaceText").value = result.replaceText || "";
+    document.getElementById("matchType").value = result.matchType || "normal";
+    document.getElementById("caseSensitive").checked = result.caseSensitive || false;
+    document.getElementById("startElementId").value = result.startElementId || "";
+}
+
+// 更新匹配和替换统计信息
+function updateStats(matchCount, replaceCount) {
+    document.getElementById("stats").textContent = `匹配: ${matchCount} | 替换: ${replaceCount}`;
+}
+
+// 更新导航按钮的状态（启用/禁用）
 function updateNavigationButtons(enabled) {
     const prevButton = document.getElementById("previousButton");
     const nextButton = document.getElementById("nextButton");
@@ -184,19 +187,16 @@ function updateNavigationButtons(enabled) {
     nextButton.setAttribute("aria-disabled", !enabled);
 }
 
-// 辅助函数：处理导航请求
-function handleNavPrevious() {
-    sendMessageToActiveTab({ action: "navigate", direction: "previous" }, updateNavStats);
-}
-
-// 辅助函数：处理导航请求
-function handleNavNext() {
-    sendMessageToActiveTab({ action: "navigate", direction: "next" }, updateNavStats);
-}
-
-// 辅助函数：更新导航统计信息
+// 更新导航统计信息
 function updateNavStats(response) {
     if (response && response.currentIndex !== undefined && response.totalMatches !== undefined) {
         document.getElementById("nav-stats").textContent = `${response.currentIndex}/${response.totalMatches}`;
     }
+}
+
+// 向当前活动标签页发送消息
+function sendMessageToActiveTab(message, callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, message, callback);
+    });
 }
