@@ -58,7 +58,7 @@ function handleHighlight() {
             if (response?.matchCount !== undefined) {
                 updateStats(response.matchCount, 0);
                 updateNavigationButtons(response.matchCount > 0);
-                updateNavStats({ currentIndex: response.matchCount > 0 ? 1 : 0, totalMatches: response.matchCount });
+                updateNavStats({ currentIndex: 0, totalMatches: response.matchCount });
             } else {
                 updateStats(-1, -1);
                 updateNavigationButtons(false);

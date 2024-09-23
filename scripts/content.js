@@ -122,6 +122,10 @@ function navigateHighlights(direction, sendResponse) {
         currentHighlightIndex = (currentHighlightIndex + 1) % highlightedElements.length;
     } else if (direction === "previous") {
         currentHighlightIndex = (currentHighlightIndex - 1 + highlightedElements.length) % highlightedElements.length;
+    } else {
+        sendResponse({ currentIndex: -1, totalMatches: -1 });
+        console.log("未知的方向:", direction);
+        return;
     }
 
     const currentElement = highlightedElements[currentHighlightIndex];
@@ -131,7 +135,8 @@ function navigateHighlights(direction, sendResponse) {
     currentElement.style.border = "2px solid red";
 
     sendResponse({
-        currentIndex: currentHighlightIndex + 1,
+        currentIndex:
+            direction === "next" ? currentHighlightIndex + 1 : highlightedElements.length - currentHighlightIndex,
         totalMatches: highlightedElements.length,
     });
 }
