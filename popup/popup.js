@@ -5,10 +5,11 @@ const storage = chrome.storage && chrome.storage.local ? chrome.storage.local : 
 document.addEventListener("DOMContentLoaded", () => {
     // 为按钮添加事件监听器
     document.getElementById("highlightButton")?.addEventListener("click", handleHighlight);
-    document.getElementById("replaceButton")?.addEventListener("click", handleReplace);
+    document.getElementById("replaceButton")?.addEventListener("click", showConfirmModal);
     document.getElementById("clearButton")?.addEventListener("click", handleClear);
     document.getElementById("previousButton")?.addEventListener("click", handleNavPrevious);
     document.getElementById("nextButton")?.addEventListener("click", handleNavNext);
+    document.getElementById("confirmReplace")?.addEventListener("click", handleConfirmedReplace);
 
     // 初始化时禁用导航按钮并重置导航统计
     updateNavigationButtons(false);
@@ -17,6 +18,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // 加载保存的内容
     loadSavedContent();
 });
+
+// 添加这个新函数
+function showConfirmModal() {
+    $("#confirmModal").modal("show");
+}
+
+// 添加这个新函数
+function handleConfirmedReplace() {
+    $("#confirmModal").modal("hide");
+    handleReplace();
+}
 
 // 处理高亮功能
 function handleHighlight() {
@@ -46,7 +58,7 @@ function handleHighlight() {
             if (response?.matchCount !== undefined) {
                 updateStats(response.matchCount, 0);
                 updateNavigationButtons(response.matchCount > 0);
-                updateNavStats({ currentIndex: response.matchCount > 0 ? 1 : 0, totalMatches: response.matchCount });
+                updateNavStats({ currentIndex: 0, totalMatches: response.matchCount });
             } else {
                 updateStats(-1, -1);
                 updateNavigationButtons(false);
@@ -124,7 +136,7 @@ function handleNavNext() {
 // 从存储中加载保存的内容
 function loadSavedContent() {
     const keys = ["searchText", "replaceText", "matchType", "caseSensitive", "startElementId"];
-    
+
     if (storage === localStorage) {
         // 使用 localStorage
         const result = keys.reduce((acc, key) => {
@@ -155,7 +167,7 @@ function saveContent() {
         // 使用 chrome.storage.local
         storage.set(content);
     }
-    console.log(`保存内容到 ${storage === localStorage ? 'localStorage' : 'chrome.storage.local'}:`, content);
+    console.log(`保存内容到 ${storage === localStorage ? "localStorage" : "chrome.storage.local"}:`, content);
 }
 
 // 更新UI元素的值
