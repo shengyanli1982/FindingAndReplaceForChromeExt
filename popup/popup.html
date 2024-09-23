@@ -12,7 +12,16 @@
         <div class="container-fluid p-0">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">文本替换工具</h5>
-                <a type="button" class="btn btn-link btn-sm" id="clearButton">清除内容</a>
+                <a
+                    type="button"
+                    class="btn btn-link btn-sm"
+                    id="clearButton"
+                    data-toggle="tooltip"
+                    data-placement="bottom"
+                    title="清除所有高亮和窗口内的内容，设置为初始状态。"
+                >
+                    清除内容
+                </a>
             </div>
             <form>
                 <div class="form-group">
@@ -32,7 +41,12 @@
                         <option value="regex">正则表达式</option>
                     </select>
                 </div>
-                <div class="form-check mb-3">
+                <div
+                    class="form-check mb-3"
+                    data-toggle="tooltip"
+                    data-placement="bottom"
+                    title="大小写敏感，匹配时是否区分大小写。"
+                >
                     <input type="checkbox" class="form-check-input" id="caseSensitive" />
                     <label class="form-check-label" for="caseSensitive">大小写敏感</label>
                 </div>
@@ -40,8 +54,26 @@
                     <input type="text" class="form-control" id="startElementId" placeholder="起始元素 id (可选)" />
                 </div>
                 <div class="btn-group d-flex mb-3" role="group">
-                    <button type="button" class="btn btn-outline-primary" id="highlightButton">高亮</button>
-                    <button type="button" class="btn btn-outline-primary" id="replaceButton">替换</button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        id="highlightButton"
+                        data-toggle="tooltip"
+                        data-placement="bottom"
+                        title="高亮所有匹配内容, 支持正则表达式。"
+                    >
+                        高亮
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        id="replaceButton"
+                        data-toggle="tooltip"
+                        data-placement="bottom"
+                        title="替换所有匹配内容。内容一旦替换，无法恢复。"
+                    >
+                        替换
+                    </button>
                 </div>
                 <div
                     class="btn-toolbar justify-content-between align-items-center flex-nowrap"
@@ -49,14 +81,28 @@
                     aria-label="导航工具栏"
                 >
                     <div class="btn-group" role="group" aria-label="导航按钮组（左）">
-                        <a type="button" class="btn btn-link" id="previousButton">
+                        <a
+                            type="button"
+                            class="btn btn-link"
+                            id="previousButton"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                            title="移动到上一个匹配内容。"
+                        >
                             <i class="bi bi-caret-left-fill"></i>
                             上一匹配
                         </a>
                     </div>
-                    <p id="nav-stats">0/0</p>
+                    <p id="nav-stats" data-toggle="tooltip" data-placement="bottom" title="当前位置/总匹配数">0/0</p>
                     <div class="btn-group" role="group" aria-label="导航按钮组（右）">
-                        <a type="button" class="btn btn-link" id="nextButton">
+                        <a
+                            type="button"
+                            class="btn btn-link"
+                            id="nextButton"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                            title="移动到下一个匹配内容。"
+                        >
                             下一匹配
                             <i class="bi bi-caret-right-fill"></i>
                         </a>
@@ -64,7 +110,9 @@
                 </div>
             </form>
             <footer class="text-center">
-                <p id="stats">匹配: 0 | 替换: 0</p>
+                <p id="stats" data-toggle="tooltip" data-placement="bottom" title="匹配内容/替换内容">
+                    匹配: 0 | 替换: 0
+                </p>
             </footer>
         </div>
 
