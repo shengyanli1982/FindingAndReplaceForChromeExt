@@ -20,8 +20,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         case "removeHighlights":
             removeHighlights(request);
-            highlightedElements = [];
-            currentHighlightIndex = -1;
             sendResponse({ message: "所有高亮已移除" });
             break;
 
@@ -38,7 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // 全局变量
-let highlightedElements = []; // 存储所有高亮的元素
+let highlightedElements = []; // 存储所有高亮的元素及其所在的iframe
 let currentHighlightIndex = -1; // 当前聚焦的高亮元素索引
 
 // 高亮文本的主函数
@@ -52,9 +50,8 @@ function highlightText({ searchText, matchType, caseSensitive, startElementId })
         return 0;
     }
     const regex = createSearchRegex(searchText, matchType, caseSensitive);
-    const matchCount = processNodeAndHighlight(startElement, regex, "yellow");
+    const matchCount = processNodeAndHighlight(startElement, regex, "yellow", null);
     console.log(`总共高亮了 ${matchCount} 个匹配项`);
-    highlightedElements = document.querySelectorAll("mark.extension-highlight");
     return matchCount;
 }
 
@@ -84,6 +81,7 @@ function removeHighlights({ startElementId }) {
     const totalRemovedCount = mainDocumentCount + iframeCount;
     console.log(`总共移除了 ${totalRemovedCount} 个旧高亮`);
 
+    // 重新初始化高亮元素
     highlightedElements = [];
     currentHighlightIndex = -1;
 
@@ -115,7 +113,7 @@ function navigateHighlights(direction, sendResponse) {
 
     // 移除之前聚焦元素的红色边框
     if (currentHighlightIndex !== -1) {
-        highlightedElements[currentHighlightIndex].style.border = "";
+        highlightedElements[currentHighlightIndex].element.style.border = "";
     }
 
     if (direction === "next") {
@@ -128,30 +126,37 @@ function navigateHighlights(direction, sendResponse) {
         return;
     }
 
-    const currentElement = highlightedElements[currentHighlightIndex];
-    currentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    const { element, iframe } = highlightedElements[currentHighlightIndex];
+
+    // 如果元素在 iframe 中，先滚动 iframe 到可见区域
+    if (iframe) {
+        iframe.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // 滚动元素到可见区域
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
 
     // 添加红色边框到当前聚焦的元素
-    currentElement.style.border = "2px solid red";
+    element.style.border = "2px solid red";
 
     sendResponse({
         currentIndex:
-            direction === "next" ? currentHighlightIndex + 1 : highlightedElements.length - currentHighlightIndex,
+            direction === "previous" ? currentHighlightIndex + 1 : highlightedElements.length - currentHighlightIndex,
         totalMatches: highlightedElements.length,
     });
 }
 
 // 递归处理节点并应用高亮
-function processNodeAndHighlight(node, regex, highlightColor) {
+function processNodeAndHighlight(node, regex, highlightColor, iframe) {
     let matchCount = 0;
     if (node.nodeType === Node.TEXT_NODE) {
-        matchCount += applyHighlightToTextNode(node, regex, highlightColor);
+        matchCount += applyHighlightToTextNode(node, regex, highlightColor, iframe);
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.tagName.toLowerCase() === "iframe") {
             matchCount += processIframeContent(node, regex, highlightColor);
         } else if (!node.classList.contains("extension-highlight-wrapper")) {
             node.childNodes.forEach(childNode => {
-                matchCount += processNodeAndHighlight(childNode, regex, highlightColor);
+                matchCount += processNodeAndHighlight(childNode, regex, highlightColor, iframe);
             });
         }
     }
@@ -183,7 +188,7 @@ function processNodeAndReplace(node, regex, replaceText) {
 }
 
 // 对文本节点应用高亮
-function applyHighlightToTextNode(textNode, regex, highlightColor) {
+function applyHighlightToTextNode(textNode, regex, highlightColor, iframe) {
     const text = textNode.textContent;
     const matches = text.match(regex);
     if (matches) {
@@ -202,6 +207,8 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
             mark.textContent = match;
             span.appendChild(mark);
             lastIndex = offset + match.length;
+            // 在创建高亮元素后，将其添加到 highlightedElements 数组
+            highlightedElements.push({ element: mark, iframe: iframe });
         });
 
         if (lastIndex < text.length) {
@@ -210,6 +217,7 @@ function applyHighlightToTextNode(textNode, regex, highlightColor) {
 
         fragment.appendChild(span);
         textNode.parentNode.replaceChild(fragment, textNode);
+
         return matches.length;
     }
     return 0;
@@ -235,7 +243,7 @@ function processIframeContent(iframeNode, regex, highlightColor) {
             return 0;
         }
         const iframeDocument = iframeNode.contentDocument || iframeNode.contentWindow.document;
-        return processNodeAndHighlight(iframeDocument.body, regex, highlightColor);
+        return processNodeAndHighlight(iframeDocument.body, regex, highlightColor, iframeNode);
     } catch (e) {
         console.error("无法访问 iframe 内容, 错误:", e);
         return 0;
