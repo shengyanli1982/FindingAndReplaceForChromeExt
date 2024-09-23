@@ -140,8 +140,7 @@ function navigateHighlights(direction, sendResponse) {
     element.style.border = "2px solid red";
 
     sendResponse({
-        currentIndex:
-            direction === "previous" ? currentHighlightIndex + 1 : highlightedElements.length - currentHighlightIndex,
+        currentIndex: currentHighlightIndex + 1, // 修正 currentIndex 的计算
         totalMatches: highlightedElements.length,
     });
 }
@@ -207,7 +206,7 @@ function applyHighlightToTextNode(textNode, regex, highlightColor, iframe) {
             mark.textContent = match;
             span.appendChild(mark);
             lastIndex = offset + match.length;
-            // 在创建高亮元素后，将其添加到 highlightedElements 数组
+            // 在创建高亮元素后，��其添加到 highlightedElements 数组
             highlightedElements.push({ element: mark, iframe: iframe });
         });
 
