@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             break;
 
         case "navigate":
-            navigateHighlights(request.direction, sendResponse);
+            sendResponse(navigateHighlights(request.direction));
             return true; // 保持消息通道开放以进行异步响应
 
         default:
@@ -105,10 +105,9 @@ function replaceText({ searchText, replaceText, matchType, caseSensitive, startE
 }
 
 // 在高亮元素间导航的函数
-function navigateHighlights(direction, sendResponse) {
+function navigateHighlights(direction) {
     if (highlightedElements.length === 0) {
-        sendResponse({ currentIndex: 0, totalMatches: 0 });
-        return;
+        return { currentIndex: 0, totalMatches: 0 }; // 修改返回值
     }
 
     // 移除之前聚焦元素的红色边框
@@ -121,9 +120,8 @@ function navigateHighlights(direction, sendResponse) {
     } else if (direction === "previous") {
         currentHighlightIndex = (currentHighlightIndex - 1 + highlightedElements.length) % highlightedElements.length;
     } else {
-        sendResponse({ currentIndex: -1, totalMatches: -1 });
         console.log("未知的方向:", direction);
-        return;
+        return { currentIndex: -1, totalMatches: -1 }; // 修改返回值
     }
 
     const { element, iframe } = highlightedElements[currentHighlightIndex];
@@ -139,10 +137,11 @@ function navigateHighlights(direction, sendResponse) {
     // 添加红色边框到当前聚焦的元素
     element.style.border = "2px solid red";
 
-    sendResponse({
+    return {
+        // 修改返回值
         currentIndex: currentHighlightIndex + 1, // 修正 currentIndex 的计算
         totalMatches: highlightedElements.length,
-    });
+    };
 }
 
 // 递归处理节点并应用高亮
