@@ -12,7 +12,9 @@
         <div class="container-fluid p-0">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">文本替换工具</h5>
-                <a type="button" class="btn btn-link btn-sm" id="clearButton">清除内容</a>
+                <div class="d-flex justify-content-between">
+                    <a type="button" class="btn btn-link btn-sm" id="clearButton">清除内容</a>
+                </div>
             </div>
             <form>
                 <div class="form-group">
@@ -26,21 +28,41 @@
                         placeholder="替换文本，正则下支持：$1, $2, $3, ..."
                     />
                 </div>
-                <div class="form-group">
-                    <select class="form-control" id="matchType">
-                        <option value="normal">普通匹配</option>
-                        <option value="regex">正则表达式</option>
-                    </select>
-                </div>
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="caseSensitive" />
-                    <label class="form-check-label" for="caseSensitive">大小写敏感</label>
+                <div class="form-group mb-3">
+                    <div class="d-flex justify-content-between align-items-center form-check form-check-inline">
+                        <div>
+                            <input
+                                type="radio"
+                                class="form-check-input"
+                                name="matchType"
+                                id="normalMatch"
+                                value="normal"
+                                checked
+                            />
+                            <label class="form-check-label" for="normalMatch">普通匹配</label>
+                        </div>
+                        <div>
+                            <input
+                                type="radio"
+                                class="form-check-input"
+                                name="matchType"
+                                id="regexMatch"
+                                value="regex"
+                            />
+                            <label class="form-check-label" for="regexMatch">正则表达式</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" class="form-check-input" id="caseSensitive" />
+                            <label class="form-check-label" for="caseSensitive">大小写敏感</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <input type="text" class="form-control" id="startElementId" placeholder="起始元素 id (可选)" />
                 </div>
                 <div class="btn-group d-flex mb-3" role="group">
                     <button type="button" class="btn btn-outline-primary" id="highlightButton">高亮</button>
+                    <button type="button" class="btn btn-outline-primary" id="saveRoleButton">保存</button>
                     <button type="button" class="btn btn-outline-primary" id="replaceButton">替换</button>
                 </div>
                 <div
@@ -63,6 +85,12 @@
                     </div>
                 </div>
             </form>
+            <hr />
+            <div>点击 “策略管理” 按钮，可添加、编辑和删除策略。</div>
+            <div class="btn-group d-flex mb-3" role="group">
+                <button type="button" class="btn btn-outline-primary" id="rolesManagementButton">策略管理</button>
+                <button type="button" class="btn btn-outline-primary" id="runRolesButton">运行策略</button>
+            </div>
             <footer class="text-center">
                 <p id="stats">匹配: 0 | 替换: 0</p>
             </footer>

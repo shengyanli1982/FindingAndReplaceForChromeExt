@@ -1,6 +1,7 @@
 /* 全局样式 */
 body {
-    width: 350px;
+    width: 400px;
+    height: auto;
     padding: 20px;
     background-color: #f8f9fa;
 }
@@ -60,6 +61,14 @@ h5 {
     padding: 0.375rem 0.75rem;
 }
 
+#stats {
+    margin-top: 10px;
+    color: #6c757d;
+    font-size: 1.2em;
+    text-align: center;
+    display: block;
+}
+
 /* 导航统计 */
 #nav-stats {
     padding: 0 15px;
@@ -76,7 +85,7 @@ h5 {
 
 /* 页脚 */
 footer {
-    margin-top: 15px;
+    margin-top: 25px;
     padding-top: 12px;
     border-top: 1px solid #dee2e6;
     font-size: 0.9em;

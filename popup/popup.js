@@ -50,7 +50,7 @@ function handleHighlight() {
         {
             action: "highlight",
             searchText,
-            matchType: document.getElementById("matchType").value,
+            matchType: document.querySelector('input[name="matchType"]:checked').value,
             caseSensitive: document.getElementById("caseSensitive").checked,
             startElementId: document.getElementById("startElementId").value,
         },
@@ -86,7 +86,7 @@ function handleReplace() {
             action: "replace",
             searchText,
             replaceText,
-            matchType: document.getElementById("matchType").value,
+            matchType: document.querySelector('input[name="matchType"]:checked').value,
             caseSensitive: document.getElementById("caseSensitive").checked,
             startElementId: document.getElementById("startElementId").value,
         },
@@ -107,19 +107,27 @@ function handleReplace() {
 
 // 处理清除功能
 function handleClear() {
-    // 清空输入框和复选框
+    // 清空输入框
     document.getElementById("searchText").value = "";
     document.getElementById("replaceText").value = "";
-    document.getElementById("matchType").value = "normal";
-    document.getElementById("caseSensitive").checked = false;
     document.getElementById("startElementId").value = "";
+
+    // 重置 radio 按钮和复选框
+    document.getElementById("normalMatch").checked = true;
+    document.getElementById("regexMatch").checked = false;
+    document.getElementById("caseSensitive").checked = false;
+
+    // 重置统计信息
     updateStats(0, 0);
     updateNavigationButtons(false);
     updateNavStats({ currentIndex: 0, totalMatches: 0 });
+
     // 发送移除高亮请求到活动标签页
     sendMessageToActiveTab({ action: "removeHighlights" }, response => {
         console.log(response.message);
     });
+
+    // 保存清除后的内容
     saveContent();
 }
 
@@ -155,7 +163,7 @@ function saveContent() {
     const content = {
         searchText: document.getElementById("searchText").value,
         replaceText: document.getElementById("replaceText").value,
-        matchType: document.getElementById("matchType").value,
+        matchType: document.querySelector('input[name="matchType"]:checked').value,
         caseSensitive: document.getElementById("caseSensitive").checked,
         startElementId: document.getElementById("startElementId").value,
     };
@@ -174,7 +182,10 @@ function saveContent() {
 function updateUI(result) {
     document.getElementById("searchText").value = result.searchText || "";
     document.getElementById("replaceText").value = result.replaceText || "";
-    document.getElementById("matchType").value = result.matchType || "normal";
+    const matchTypeRadio = document.querySelector(`input[name="matchType"][value="${result.matchType || "normal"}"]`);
+    if (matchTypeRadio) {
+        matchTypeRadio.checked = true;
+    }
     document.getElementById("caseSensitive").checked = result.caseSensitive || false;
     document.getElementById("startElementId").value = result.startElementId || "";
 }
