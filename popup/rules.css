@@ -1,0 +1,19 @@
+/* 全局样式 */
+body {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.container-fluid {
+    max-width: 1024px;
+}
+
+.description-text {
+    text-align: left;
+    padding-top: 10px;
+}
+
+#rulesOperation {
+    padding-bottom: 25px;
+    text-align: center;
+}

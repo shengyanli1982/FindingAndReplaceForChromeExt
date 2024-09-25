@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>文本替换扩展</title>
+        <link rel="stylesheet" href="bootstrap.min.css" />
+        <link rel="stylesheet" href="bootstrap-icons.min.css" />
+        <link rel="stylesheet" href="rules.css" />
+    </head>
+    <body>
+        <div class="container-fluid p-0">
+            <div class="py-5 text-center">
+                <img class="d-block mx-auto mb-4" src="/icons/icon128.png" alt="" width="128" height="128" />
+                <h2>文本替换规则管理</h2>
+                <div class="lead text-left">
+                    <p class="description-text">
+                        欢迎使用文本替换规则管理页面。它允许您创建、编辑和管理自定义的文本替换规则，
+                        以便在浏览网页时自动替换文本。无论是提高阅读效率、个性化内容还是纠正错误，都能满足您的需求。
+                    </p>
+                </div>
+            </div>
+            <div class="row" id="rulesOperation">
+                <div class="col-6 offset-6 d-flex justify-content-end">
+                    <button type="button" class="btn btn-link" id="clearSelectedRulesButton">
+                        <i class="bi bi-x-circle"></i>
+                        清除规则
+                    </button>
+                    <button type="button" class="btn btn-link" id="deleteSelectedRulesButton">
+                        <i class="bi bi-download"></i>
+                        导出规则
+                    </button>
+                    <button type="button" class="btn btn-link" id="importRulesButton">
+                        <i class="bi bi-upload"></i>
+                        导入规则
+                    </button>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col" style="width: 4%">
+                            <input type="checkbox" id="selectAllCheckboxes" />
+                        </th>
+                        <th scope="col" style="width: 4%">#</th>
+                        <th scope="col" style="width: 26%">匹配</th>
+                        <th scope="col" style="width: 26%">替换</th>
+                        <th scope="col" style="width: 40%">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="rulesTableBody">
+                    <!-- 动态生成的规则行将插入到这里 -->
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="rule-checkbox" />
+                        </td>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>@mdo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script src="jquery-3.6.4.min.js"></script>
+        <script src="bootstrap.min.js"></script>
+        <script src="rules.js"></script>
+    </body>
+</html>

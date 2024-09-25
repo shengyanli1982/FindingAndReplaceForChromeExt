@@ -5,11 +5,12 @@ const storage = chrome.storage && chrome.storage.local ? chrome.storage.local : 
 document.addEventListener("DOMContentLoaded", () => {
     // 为按钮添加事件监听器
     document.getElementById("highlightButton")?.addEventListener("click", handleHighlight);
-    document.getElementById("replaceButton")?.addEventListener("click", showConfirmModal);
+    document.getElementById("replaceButton")?.addEventListener("click", showReplaceConfirmModal);
     document.getElementById("clearButton")?.addEventListener("click", handleClear);
     document.getElementById("previousButton")?.addEventListener("click", handleNavPrevious);
     document.getElementById("nextButton")?.addEventListener("click", handleNavNext);
     document.getElementById("confirmReplace")?.addEventListener("click", handleConfirmedReplace);
+    document.getElementById("rolesManagementButton")?.addEventListener("click", openRulesManagementPage);
 
     // 初始化时禁用导航按钮并重置导航统计
     updateNavigationButtons(false);
@@ -19,15 +20,48 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSavedContent();
 });
 
-// 添加这个新函数
-function showConfirmModal() {
+// 显示替换确认模态框
+function showReplaceConfirmModal() {
     $("#confirmModal").modal("show");
 }
 
-// 添加这个新函数
+// 处理确认替换，并隐藏模态框
 function handleConfirmedReplace() {
     $("#confirmModal").modal("hide");
     handleReplace();
+}
+
+// 打开规则管理页面
+function openRulesManagementPage() {
+    const rulesManagementPageUrl = chrome.runtime.getURL("popup/rules.html");
+    const tabName = "文本替换规则管理"; // 设置标签页的名称
+
+    // 查询所有标签页
+    chrome.tabs.query({}, function (tabs) {
+        // 查找是否存在匹配的标签页
+        const existingTab = tabs.find(tab => {
+            console.log(tab.url);
+            return tab.url && tab.url === rulesManagementPageUrl;
+        });
+
+        if (existingTab) {
+            // 如果标签页存在，跳转到该标签页
+            chrome.tabs.update(existingTab.id, { active: true });
+            chrome.windows.update(existingTab.windowId, { focused: true });
+        } else {
+            // 如果标签页不存在，创建新标签页
+            chrome.tabs.create({ url: rulesManagementPageUrl }, function (newTab) {
+                // 使用 chrome.tabs.onUpdated 监听器来设置标签页标题
+                function updateTabTitle(tabId, changeInfo, tab) {
+                    if (tabId === newTab.id && changeInfo.status === "complete") {
+                        chrome.tabs.sendMessage(tabId, { action: "setPageTitle", title: tabName });
+                        chrome.tabs.onUpdated.removeListener(updateTabTitle);
+                    }
+                }
+                chrome.tabs.onUpdated.addListener(updateTabTitle);
+            });
+        }
+    });
 }
 
 // 处理高亮功能
