@@ -8,7 +8,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             console.log("开始执行高亮操作");
             removeHighlights(request);
             const matchCount = highlightText(request);
-            currentHighlightIndex = matchCount > 0 ? 0 : -1;
             sendResponse({ matchCount });
             break;
 
@@ -106,8 +105,9 @@ function replaceText({ searchText, replaceText, matchType, caseSensitive, startE
 
 // 在高亮元素间导航的函数
 function navigateHighlights(direction) {
-    if (highlightedElements.length === 0) {
-        return { currentIndex: 0, totalMatches: 0 }; // 修改返回值
+    const totalMatches = highlightedElements.length;
+    if (totalMatches === 0) {
+        return { currentIndex: 0, totalMatches: 0 };
     }
 
     // 移除之前聚焦元素的红色边框
@@ -115,32 +115,31 @@ function navigateHighlights(direction) {
         highlightedElements[currentHighlightIndex].element.style.border = "";
     }
 
+    // 更新 currentHighlightIndex
     if (direction === "next") {
-        currentHighlightIndex = (currentHighlightIndex + 1) % highlightedElements.length;
+        currentHighlightIndex = (currentHighlightIndex + 1) % totalMatches;
     } else if (direction === "previous") {
-        currentHighlightIndex = (currentHighlightIndex - 1 + highlightedElements.length) % highlightedElements.length;
+        currentHighlightIndex =
+            currentHighlightIndex === -1 ? totalMatches - 1 : (currentHighlightIndex - 1 + totalMatches) % totalMatches;
     } else {
         console.log("未知的方向:", direction);
-        return { currentIndex: -1, totalMatches: -1 }; // 修改返回值
+        return { currentIndex: -1, totalMatches: -1 };
     }
 
     const { element, iframe } = highlightedElements[currentHighlightIndex];
 
-    // 如果元素在 iframe 中，先滚动 iframe 到可见区域
+    // 滚动到可见区域
     if (iframe) {
         iframe.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-
-    // 滚动元素到可见区域
     element.scrollIntoView({ behavior: "smooth", block: "center" });
 
     // 添加红色边框到当前聚焦的元素
     element.style.border = "2px solid red";
 
     return {
-        // 修改返回值
-        currentIndex: currentHighlightIndex + 1, // 修正 currentIndex 的计算
-        totalMatches: highlightedElements.length,
+        currentIndex: currentHighlightIndex + 1,
+        totalMatches,
     };
 }
 
@@ -205,7 +204,7 @@ function applyHighlightToTextNode(textNode, regex, highlightColor, iframe) {
             mark.textContent = match;
             span.appendChild(mark);
             lastIndex = offset + match.length;
-            // 在创建高亮元素后，��其添加到 highlightedElements 数组
+            // 在创建高亮元素后，其添加到 highlightedElements 数组
             highlightedElements.push({ element: mark, iframe: iframe });
         });
 
